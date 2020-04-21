@@ -1611,8 +1611,10 @@ __webpack_require__.r(__webpack_exports__);
 
 /*МОДАЛЬНЫЕ ОКНА*/
 var modals = function modals() {
+  var btnPressed = false;
+
   function bindModal(triggerSelector, modalSelector, closeSelector) {
-    var closeClickOverlay = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
+    var destroy = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
     var disabled = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : '';
 
     /*получаем элементы по пришедшим в функцию селекторам*/
@@ -1634,11 +1636,19 @@ var modals = function modals() {
         if (e.target) {
           e.preventDefault();
         }
+
+        btnPressed = true;
+        /*при клике на подарок, показываем модальное окно, а подарок со страницы убираем*/
+
+        if (destroy) {
+          item.remove();
+        }
         /*закрытие всех модальных окон*/
 
 
         windows.forEach(function (item) {
           item.style.display = 'none';
+          item.classList.add('animated', 'fadeIn');
         });
         modal.style.display = 'block';
         /*класс modal-open из библиотеки bootstrap.css вместо document.body.overflow="hidden"*/
@@ -1664,7 +1674,7 @@ var modals = function modals() {
     закрытие при клике на подложку*/
 
     modal.addEventListener('click', function (e) {
-      if (e.target === modal && closeClickOverlay) {
+      if (e.target === modal) {
         /*закрытие всех модальных окон*/
         windows.forEach(function (item) {
           item.style.display = 'none';
@@ -1694,6 +1704,8 @@ var modals = function modals() {
       if (!display) {
         document.querySelector(selector).style.display = 'block';
         document.body.classList.add('modal-open');
+        var scroll = calcScroll();
+        document.body.style.marginRight = "".concat(scroll, "px");
       }
     }, time);
   }
@@ -1711,6 +1723,20 @@ var modals = function modals() {
     div.remove();
     return scrollWidth;
   }
+  /*если мы долистали до конца сайта и не нажали ни на одно модальное окно, нам вылезает окно с подарком*/
+
+
+  function openByScroll(selector) {
+    window.addEventListener('scroll', function () {
+      /*scrollHeight для совместимости со старыми браузерами*/
+      var scrollHeight = Math.max(document.documentElement.scrollHeight, document.body.scrollHeight);
+
+      if (!btnPressed && window.pageYOffset + document.documentElement.clientHeight >= scrollHeight) {
+        /*вызываем событие вручную*/
+        document.querySelector(selector).click();
+      }
+    });
+  }
   /*вызов метода для показа модального окна "вызвать мастера". в него передаем не элементы, которые соответствуют
   определенному селектору, а сами селекторы, а уже внутри функции мы по этим селекторам получим соответствующие им
   элементы. Это сделано для универсальности функции и исключения дублирования кода*/
@@ -1718,6 +1744,8 @@ var modals = function modals() {
 
   bindModal('.button-design', '.popup-design', '.popup-design .popup-close');
   bindModal('.button-consultation', '.popup-consultation', '.popup-consultation .popup-close');
+  openByScroll('.fixed-gift');
+  bindModal('.fixed-gift', '.popup-gift', '.popup-gift .popup-close', true);
   showModalByTime('.popup-consultation', 50000);
 };
 
