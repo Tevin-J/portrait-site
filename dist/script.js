@@ -1583,20 +1583,24 @@ module.exports = g;
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _modals_modals__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./modals/modals */ "./src/js/modals/modals.js");
+/* harmony import */ var _modules_modals__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./modules/modals */ "./src/js/modules/modals.js");
+/* harmony import */ var _modules_sliders__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./modules/sliders */ "./src/js/modules/sliders.js");
+
 
 window.addEventListener('DOMContentLoaded', function () {
   'use strict';
 
-  Object(_modals_modals__WEBPACK_IMPORTED_MODULE_0__["default"])();
+  Object(_modules_modals__WEBPACK_IMPORTED_MODULE_0__["default"])();
+  Object(_modules_sliders__WEBPACK_IMPORTED_MODULE_1__["default"])('.feedback-slider-item', 'horizontal', '.main-prev-btn', '.main-next-btn');
+  Object(_modules_sliders__WEBPACK_IMPORTED_MODULE_1__["default"])('.main-slider-item', 'vertical');
 });
 
 /***/ }),
 
-/***/ "./src/js/modals/modals.js":
-/*!*********************************!*\
-  !*** ./src/js/modals/modals.js ***!
-  \*********************************/
+/***/ "./src/js/modules/modals.js":
+/*!**********************************!*\
+  !*** ./src/js/modules/modals.js ***!
+  \**********************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -1750,6 +1754,119 @@ var modals = function modals() {
 };
 
 /* harmony default export */ __webpack_exports__["default"] = (modals);
+
+/***/ }),
+
+/***/ "./src/js/modules/sliders.js":
+/*!***********************************!*\
+  !*** ./src/js/modules/sliders.js ***!
+  \***********************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var core_js_modules_es_array_for_each__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! core-js/modules/es.array.for-each */ "./node_modules/core-js/modules/es.array.for-each.js");
+/* harmony import */ var core_js_modules_es_array_for_each__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_es_array_for_each__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! core-js/modules/web.dom-collections.for-each */ "./node_modules/core-js/modules/web.dom-collections.for-each.js");
+/* harmony import */ var core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_1__);
+
+
+
+/*слайдеры*/
+var sliders = function sliders(sliderSelector, direction, prevSelector, nextSelector) {
+  /*создаем переменные с текущим слайдом и переменной отвечающей за остановку
+  перелистывания слайдов при наведении на них мыши*/
+  var currentSlide = 0;
+  var paused = false;
+  var slides = document.querySelectorAll(sliderSelector);
+  /*ф-я показа слайдов*/
+
+  function showSlides(n) {
+    /*зацикливаем слайдер чтоб при переключении вперед с последнего показался первый и наоборот*/
+    if (n > slides.length - 1) {
+      currentSlide = 0;
+    }
+
+    if (n < 0) {
+      currentSlide = slides.length - 1;
+    }
+    /*всем слайдам добавляем класс анимации и убираем их с экрана*/
+
+
+    slides.forEach(function (slide) {
+      slide.classList.add('animated');
+      slide.style.display = 'none';
+    });
+    /*вставляем на страницу только текущий слайд*/
+
+    slides[currentSlide].style.display = 'block';
+  }
+  /*первая отрисовка слайдера с первого слайда*/
+
+
+  showSlides(currentSlide);
+  /*ф-я переключения слайдов принимает или 1 или -1*/
+
+  function toggleSlide(n) {
+    showSlides(currentSlide += n);
+  }
+  /*обрабатываем ручное переключение слайдов внутри try, так как не во всех слайдерах есть кнопки*/
+
+
+  try {
+    /*получаем эти кнопки переключения слайдов*/
+    var prevSlide = document.querySelector(prevSelector);
+    var nextSlide = document.querySelector(nextSelector);
+    /*обрабатываем клики на эти кнопки, добавляя анимации и переключая слайды*/
+
+    prevSlide.addEventListener('click', function () {
+      toggleSlide(-1);
+      slides[currentSlide].classList.remove('slideInLeft');
+      slides[currentSlide].classList.add('slideInRight');
+    });
+    nextSlide.addEventListener('click', function () {
+      toggleSlide(1);
+      slides[currentSlide].classList.remove('slideInRight');
+      slides[currentSlide].classList.add('slideInLeft');
+    });
+  } catch (e) {
+    console.log(e);
+  }
+  /*ф-я отвечающая за анимированное переключение слайдов*/
+
+
+  function activateAnimation() {
+    /*если слайдер вертикальный то добавляем особый класс анимации*/
+    if (direction === 'vertical') {
+      /*в paused будем получать идентификатор setInterval чтоб в последствии его зачистить и остановить анимацию*/
+      paused = setInterval(function () {
+        toggleSlide(1);
+        slides[currentSlide].classList.add('slideInDown');
+      }, 3000);
+    } else {
+      paused = setInterval(function () {
+        toggleSlide(1);
+        slides[currentSlide].classList.remove('slideInRight');
+        slides[currentSlide].classList.add('slideInLeft');
+      }, 3000);
+    }
+  }
+  /*вызываем эту ф-ю для того чтоб сразу пошла анимация*/
+
+
+  activateAnimation();
+  /*при наведении на слайдер останавливаем анимацию, а при обратном действии - запускаем заново*/
+
+  slides[0].parentNode.addEventListener('mouseenter', function () {
+    clearInterval(paused);
+  });
+  slides[0].parentNode.addEventListener('mouseleave', function () {
+    activateAnimation();
+  });
+};
+
+/* harmony default export */ __webpack_exports__["default"] = (sliders);
 
 /***/ })
 
